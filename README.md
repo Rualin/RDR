@@ -1,2 +1,3 @@
-# RDR
-Recognition of doctor's reports
+# OCR
+
+В этой ветке будут наработки по OCR части проекта
