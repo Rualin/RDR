@@ -27,4 +27,10 @@ docker run -d --name <name_of_container> -p 8000:8000 <name_of_image>
 * Flag '-d' means running in background
 * Flag '-p' sets a port where container listens
 
-Now app should be running on <http://127.0.0.1>
+Now app should be running on <http://127.0.0.1:8000>
+
+You can use curl to send image:
+
+```shell
+curl -X POST -F "file=@/path/to/image" http://127.0.0.1:8000/uploadfile/
+```
