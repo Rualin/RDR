@@ -1,0 +1,8 @@
+starlette
+uvicorn[standard]
+pydantic-core
+typing-extensions
+annotated-types
+pydantic
+fastapi[standard]
+python-multipart
