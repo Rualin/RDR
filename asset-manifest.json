@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/RDR/static/css/main.e6c13ad2.css",
-    "main.js": "/RDR/static/js/main.335bd7c2.js",
+    "main.js": "/RDR/static/js/main.c9a03b5f.js",
     "static/js/453.edf75b0f.chunk.js": "/RDR/static/js/453.edf75b0f.chunk.js",
     "index.html": "/RDR/index.html",
     "main.e6c13ad2.css.map": "/RDR/static/css/main.e6c13ad2.css.map",
-    "main.335bd7c2.js.map": "/RDR/static/js/main.335bd7c2.js.map",
+    "main.c9a03b5f.js.map": "/RDR/static/js/main.c9a03b5f.js.map",
     "453.edf75b0f.chunk.js.map": "/RDR/static/js/453.edf75b0f.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.e6c13ad2.css",
-    "static/js/main.335bd7c2.js"
+    "static/js/main.c9a03b5f.js"
   ]
 }
