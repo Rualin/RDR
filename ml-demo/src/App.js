@@ -2,44 +2,73 @@ import { useState } from 'react';
 
 function ImageTextRecognizer() {
     const [image, setImage] = useState(null);
+    const [imageFile, setImageFile] = useState(null); // Store the actual file for API
     const [result, setResult] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
+
+    const API_URL = 'https://your-ml-api-endpoint.com/predict'; // Replace with your API endpoint
 
     const handleImageUpload = (e) => {
         const file = e.target.files[0];
         if (file) {
+            setImageFile(file); // Store the file for API submission
             const reader = new FileReader();
             reader.onloadend = () => {
                 setImage(reader.result);
             };
             reader.readAsDataURL(file);
+            setError(null); // Reset error on new upload
+            setResult(''); // Clear previous results
         }
     };
 
+    // 2. Process image with real API
     const processImage = async () => {
-        if (!image) return;
+        if (!imageFile) return;
 
         setIsLoading(true);
+        setError(null);
 
         try {
-            // Replace this with actual ML model API call
-            const mockResults = await mockTextRecognition(image);
-            setResult(mockResults);
+            // Create FormData for the API request
+            const formData = new FormData();
+            formData.append('image', imageFile);
+
+            // API call
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    // Include API key if needed
+                    // 'Authorization': `Bearer ${API_KEY}`,
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error(`API request failed with status ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            // Format the result based on your API response structure
+            setResult(formatApiResponse(data));
+
         } catch (error) {
             console.error("Recognition error:", error);
-            setResult("Error processing image");
+            setError("Failed to process image. Please try again.");
+            setResult('');
         } finally {
             setIsLoading(false);
         }
     };
 
-    // Mock function - replace with your actual model integration
-    const mockTextRecognition = async (imageData) => {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                resolve("Sample recognized text: ABC123\nConfidence: 95%");
-            }, 1500);
-        });
+    // Format the API response for display
+    const formatApiResponse = (apiData) => {
+        if (apiData.text) {
+            return `Recognized text: ${apiData.text}\n}`;
+        }
+        return JSON.stringify(apiData, null, 2); // Fallback to raw JSON
     };
 
     return (
@@ -59,6 +88,7 @@ function ImageTextRecognizer() {
                             id="imageUpload"
                             accept="image/*"
                             onChange={handleImageUpload}
+                            disabled={isLoading}
                         />
                     </div>
 
@@ -90,6 +120,13 @@ function ImageTextRecognizer() {
                             'Recognize Text'
                         )}
                     </button>
+
+                    {/* Error message */}
+                    {error && (
+                        <div className="alert alert-danger mt-3">
+                            {error}
+                        </div>
+                    )}
                 </div>
 
                 <div className="col-md-6">
