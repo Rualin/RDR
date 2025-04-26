@@ -4,19 +4,30 @@ from enum import Enum
 from fastapi import FastAPI, UploadFile, HTTPException
 from pydantic import BaseModel
 from doctr.io import DocumentFile
-from doctr.models import ocr_predictor
+from doctr.models import ocr_predictor, crnn_vgg16_bn, fast_base
+from doctr.datasets import VOCABS
+import torch
 
+vocab = VOCABS['russian'] + VOCABS['latin'] + '№'
 
-det_arch = 'weights/det.pth'
-if not isfile(det_arch):
-    det_arch = 'fast_base'
+det_weights = 'weights/det.pth'
+if isfile(det_weights):
+    det_model = fast_base(pretrained=False, pretrained_backbone=False)
+    det_params = torch.load(det_weights, map_location="cpu")
+    det_model.load_state_dict(det_params)
+else:
+    det_model = 'fast_base'
 
-reco_arch = 'weights/reco.pth'
-if not isfile(reco_arch):
-    reco_arch = 'crnn_vgg16_bn'
+reco_weights = 'weights/reco.pth'
+if isfile(reco_weights):
+    reco_model = crnn_vgg16_bn(pretrained=False, pretrained_backbone=False, vocab=vocab)
+    reco_param = torch.load(reco_weights, map_location="cpu")
+    reco_model.load_state_dict(reco_param)
+else:
+    reco_model = 'crnn_vgg16_bn'
 
-predictor = ocr_predictor(det_arch=det_arch,
-                          reco_arch=reco_arch,
+predictor = ocr_predictor(det_arch=det_model,
+                          reco_arch=reco_model,
                           pretrained=True,
                           assume_straight_pages=False
                           )
@@ -59,7 +70,7 @@ async def update_weights(model_type: ModelType, new_weights: UploadFile) -> Conf
         raise HTTPException(400, "No file sent")
 
     if not new_weights.filename.endswith('.pth'):
-        raise HTTPException(400, "Usupported file type. It must be '.pth'")
+        raise HTTPException(400, "Unsupported file type. It must be '.pth'")
     weights_filename = f'weights/{model_type}.pth'
 
     with open(weights_filename, 'wb') as weights:
