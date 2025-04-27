@@ -3,6 +3,7 @@ import json
 from argparse import ArgumentParser
 import math
 from hashlib import sha256
+from datetime import datetime
 
 import cv2
 
@@ -58,12 +59,12 @@ def add_polygon(bbox_cords: dict, img_name: str):
     det_labels[img_name]['polygons'].append(polygon)
 
 
-def make_crop(bbox_cords: dict, image, crop_id: int) -> tuple[list, str]:
+def make_crop(bbox_cords: dict, image, crop_id: int, crop_name_prefix: str) -> tuple[list, str]:
     crop = image[
         bbox_cords['y']:bbox_cords['y'] + bbox_cords['height'],
         bbox_cords['x']:bbox_cords['x'] + bbox_cords['width']
     ]
-    crop_name = str(crop_id) + '.png'
+    crop_name = crop_name_prefix + str(crop_id) + '.png'
 
     return crop, crop_name
 
@@ -76,6 +77,7 @@ def main():
         os.mkdir(crops_dir)
 
     crop_id = 0
+    crop_name_prefix = datetime.now().strftime('%Y%m%d_%H%M%S_')
     label_file = open(args.ls_label_file, "r")
     with label_file:
         annotations = json.load(label_file)
@@ -89,7 +91,7 @@ def main():
                     if args.en_det:
                         add_polygon(bbox_cords, img_name)
                     if label_info['value']['text'][0] not in repeats:
-                        crop, crop_name = make_crop(bbox_cords, image, crop_id)
+                        crop, crop_name = make_crop(bbox_cords, image, crop_id, crop_name_prefix)
                         crops_labels[crop_name] = label_info['value']['text'][0]
                         cv2.imwrite(os.path.join(crops_dir, crop_name), crop)
                         repeats.add(label_info['value']['text'][0])
