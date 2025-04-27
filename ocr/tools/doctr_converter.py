@@ -15,9 +15,9 @@ repeats = set()
 
 def parse_args():
     parser = ArgumentParser(description="This script converts label-studio dataset format in docTR dataset format")
-    parser.add_argument('ls_label_file', type=str, help='Path to label studio label file (.json)')
-    parser.add_argument('local_img_dir', type=str, help="Path to directory with images")
-    parser.add_argument('save_dir', type=str, help="Path to directory where to save crops")
+    parser.add_argument('--ls_label_file', "-llf", type=str, help='Path to label studio label file (.json)')
+    parser.add_argument('--local_img_dir', "-lid", type=str, help="Path to directory with images")
+    parser.add_argument('--save_dir', "-sd", type=str, help="Path to directory where to save crops")
     parser.add_argument('--en_det', type=bool, help="Also create label file for detection training", default=False)
     return parser.parse_args()
 
@@ -78,7 +78,7 @@ def main():
 
     crop_id = 0
     crop_name_prefix = datetime.now().strftime('%Y%m%d_%H%M%S_')
-    label_file = open(args.ls_label_file, "r")
+    label_file = open(args.ls_label_file, "r", encoding="utf-8")
     with label_file:
         annotations = json.load(label_file)
         for label_obj in annotations:
@@ -97,12 +97,12 @@ def main():
                         repeats.add(label_info['value']['text'][0])
                         crop_id += 1
 
-    crops_labels_file = open(os.path.join(args.save_dir, "labels.json"), "wt")
+    crops_labels_file = open(os.path.join(args.save_dir, "labels.json"), "wt", encoding="utf-8")
     with crops_labels_file:
         json.dump(crops_labels, crops_labels_file)
 
     if args.en_det:
-        det_labels_file = open(os.path.join(args.save_dir, "det_labels.json"), "wt")
+        det_labels_file = open(os.path.join(args.save_dir, "det_labels.json"), "wt", encoding="utf8")
         with det_labels_file:
             json.dump(det_labels, det_labels_file)
 
