@@ -1,36 +1,17 @@
-from os.path import isfile
 from enum import Enum
 
+from dotenv import load_dotenv
 from fastapi import FastAPI, UploadFile, HTTPException
 from pydantic import BaseModel
 from doctr.io import DocumentFile
-from doctr.models import ocr_predictor, crnn_vgg16_bn, fast_base
-from doctr.datasets import VOCABS
-import torch
 
-vocab = VOCABS['russian'] + VOCABS['latin'] + '№'
+from api_source import gigachat_api
+from api_source import init_doctr_predictor
 
-det_weights = 'weights/det.pth'
-if isfile(det_weights):
-    det_model = fast_base(pretrained=False, pretrained_backbone=False)
-    det_params = torch.load(det_weights, map_location="cpu")
-    det_model.load_state_dict(det_params)
-else:
-    det_model = 'fast_base'
 
-reco_weights = 'weights/reco.pth'
-if isfile(reco_weights):
-    reco_model = crnn_vgg16_bn(pretrained=False, pretrained_backbone=False, vocab=vocab)
-    reco_param = torch.load(reco_weights, map_location="cpu")
-    reco_model.load_state_dict(reco_param)
-else:
-    reco_model = 'crnn_vgg16_bn'
-
-predictor = ocr_predictor(det_arch=det_model,
-                          reco_arch=reco_model,
-                          pretrained=True,
-                          assume_straight_pages=False
-                          )
+load_dotenv()
+giga_api = gigachat_api()
+ocr_predictor = init_doctr_predictor()
 
 
 class OCRResult(BaseModel):
@@ -49,19 +30,30 @@ class ModelType(str, Enum):
 app = FastAPI()
 
 
-@app.post("/uploadfile/", status_code=201)
+@app.post("/predict/", status_code=201)
 async def upload_file(file: UploadFile) -> OCRResult:
     if not file:
         raise HTTPException(400, "No file sent")
 
     content = await file.read()
 
-    if file.filename.endswith('.pdf'):
-        doc = DocumentFile.from_pdf(content)
+    if file.content_type.endswith('pdf'):
+        with open('recognized.pdf', 'wb') as output_file_for_ocr:
+            output_file_for_ocr.write(content)
+        with open('recognized.pdf', 'rb') as recognized_file_binary:
+            giga_api.upload_file(recognized_file_binary)
     else:
         doc = DocumentFile.from_images(content)
+        recognized_text = ocr_predictor(doc).render()
+        with open('recognized.txt', 'wt') as output_file_for_ocr:
+            output_file_for_ocr.write(recognized_text)
+        with open('recognized.txt', 'rb') as recognized_file_binary:
+            giga_api.upload_file(recognized_file_binary)
 
-    return OCRResult(text=predictor(doc).render())
+    response = giga_api.request()
+    giga_api.delete_file()
+
+    return OCRResult(text=response.choices[0].message.content)
 
 
 @app.post("/update_weights/{model_type}", status_code=201)
@@ -69,9 +61,9 @@ async def update_weights(model_type: ModelType, new_weights: UploadFile) -> Conf
     if not new_weights:
         raise HTTPException(400, "No file sent")
 
-    if not new_weights.filename.endswith('.pth'):
-        raise HTTPException(400, "Unsupported file type. It must be '.pth'")
-    weights_filename = f'weights/{model_type}.pth'
+    if not new_weights.filename.endswith(('.pth', '.pt')):
+        raise HTTPException(400, "Unsupported file type. It must be '.pth' or '.pt'")
+    weights_filename = f'weights/{model_type.value}.pt'
 
     with open(weights_filename, 'wb') as weights:
         content = await new_weights.read()

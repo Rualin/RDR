@@ -32,7 +32,7 @@ Now app should be running on <http://127.0.0.1:8000>
 You can use curl to send image:
 
 ```shell
-curl -X POST -F "file=@/path/to/image" http://127.0.0.1:8000/uploadfile/
+curl -X POST -F "file=@/path/to/image" http://127.0.0.1:8000/predict/
 ```
 
 ## Recognition model info

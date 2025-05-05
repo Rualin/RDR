@@ -6,3 +6,4 @@ annotated-types
 pydantic
 fastapi[standard]
 python-multipart
+gigachat

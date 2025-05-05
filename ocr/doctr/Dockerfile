@@ -1,7 +1,6 @@
 FROM ghcr.io/mindee/doctr:torch-viz-html-contrib-py3.11.8-2025-04
 
 WORKDIR /usr/src/app
-RUN mkdir -p /usr/src/app/weights
 COPY . .
 
 RUN pip install --no-cache-dir --upgrade -r requirements.txt
