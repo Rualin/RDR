@@ -8,7 +8,7 @@ function App() {
   return (
     <>
       <div>
-        <a href="assets" target="_blank">
+        <a href="https://github.com/Rualin/RDR" target="_blank">
           <img src={appLogo} className="logo" alt="App logo" />
         </a>
       </div>
