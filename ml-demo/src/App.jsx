@@ -1,17 +1,22 @@
 import { useState } from 'react'
 import appLogo from './assets/app_icon.svg'
 import './App.css'
+import { Editor } from './Editor';
 
 function App() {
-  const [count, setCount] = useState(0)
   const [preview, setPreview] = useState(null);
   const [fileType, setFileType] = useState('image'); // 'image' or 'pdf'
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [error, setError] = useState('');
   const [result, setResult] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    setSelectedFile(file);
 
     if (fileType === 'image') {
       const reader = new FileReader();
@@ -24,40 +29,53 @@ function App() {
     console.log("Selected file:", file);
   };
 
-  // const processImage = async () => {
-  //   if (!previewImage) return;
-  //
-  //   setIsLoading(true);
-  //
-  //   try {
-  //     // Replace this with actual ML model API call
-  //     const mockResults = await mockTextRecognition(image);
-  //     setResult(mockResults);
-  //   } catch (error) {
-  //     console.error("Recognition error:", error);
-  //     setResult("Error processing image");
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
-  //
-  // // Mock function - replace with actual model integration
-  // const mockTextRecognition = async (imageData) => {
-  //   return new Promise((resolve) => {
-  //     setTimeout(() => {
-  //       resolve("Sample recognized text: ABC123\nConfidence: 95%");
-  //     }, 1500);
-  //   });
-  // };
+  const mockTextRecognition = async (file) => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({
+          text: "Пример результата:\n\nДиагноз: ОРВИ\nРекомендации:\n- Постельный режим\n- Обильное питье"
+        });
+      }, 1500);
+    });
+  };
+
+  const processFile = async () => {
+    if (!selectedFile) return;
+
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+
+      // const response = await fetch('YOUR_API_ENDPOINT', {
+      //   method: 'POST',
+      //   body: formData,
+      //   // headers: { 'Authorization': 'Bearer YOUR_TOKEN' } // if needed
+      // });
+
+      // if (!response.ok) throw new Error('API request failed');
+
+      // const data = await response.json();
+      const data = await mockTextRecognition(formData);
+      setResult(data.text); // Assuming API returns { text: "..." }
+    } catch (err) {
+      setError(err.message);
+      console.error('Processing error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <>
-      <div>
-        <a href="https://github.com/Rualin/RDR" target="_blank">
+      <div className="app-header">
+        <a href="https://github.com/Rualin/RDR" target="_blank" rel="noreferrer">
           <img src={appLogo} className="logo" alt="App logo" />
         </a>
+        <h1>Распознавание врачебных заключений</h1>
       </div>
-      <h1>Распознавание врачебных заключений</h1>
 
 
       <div className="file-upload-container">
@@ -104,30 +122,64 @@ function App() {
           Загрузить {fileType === 'image' ? 'Изображение' : 'PDF'}
         </label>
 
-        {/* Preview area */}
         {preview && (
-          <div className="preview-container">
-            {fileType === 'image' ? (
-              <img src={preview} alt="Preview" className="preview-content" />
-            ) : (
-              <iframe
-                src={preview}
-                className="preview-content pdf-preview"
-                title="PDF Preview"
-              />
-            )}
-          </div>
-        )}
+            <div className="preview-action-container">
+              <div className="preview-container">
+                {fileType === 'image' ? (
+                    <img src={preview} alt="Preview" className="preview-content" />
+                ) : (
+                    <iframe
+                        src={preview}
+                        className="preview-content pdf-preview"
+                        title="PDF Preview"
+                    />
+                )}
+              </div>
 
-        {/* Status */}
-        <div className="file-status">
-          {preview ? `${fileType.toUpperCase()} loaded` : 'No file selected'}
-        </div>
+              {/* Status */}
+              <div className="file-status">
+                {preview ? `${fileType.toUpperCase()} loaded` : 'No file selected'}
+              </div>
+
+              <button
+                  className={`process-button ${isLoading ? 'loading' : ''}`}
+                  onClick={processFile}
+                  disabled={isLoading}
+              >
+                {isLoading ? 'Обработка...' : 'Распознать текст'}
+              </button>
+
+            <div className="result-container">
+              <div className="result-header">
+                <h3>Результат распознавания:</h3>
+                <div className="result-controls">
+                  <button
+                      className="edit-toggle"
+                      onClick={() => setIsEditing(!isEditing)}
+                  >
+                    {isEditing ? 'Заблокировать' : 'Редактировать'}
+                  </button>
+                  <button
+                      className="copy-button"
+                      onClick={() => navigator.clipboard.writeText(result)}
+                  >
+                    Копировать
+                  </button>
+                </div>
+              </div>
+              <Editor
+                  initialValue={result}
+                  editable={isEditing}
+                  onChange={(newText) => setResult(newText)}
+              />
+            </div>
+            </div>
+        )}
       </div>
 
 
       <p className="app info">
-        v0.2
+        v1.0
       </p>
     </>
   )
