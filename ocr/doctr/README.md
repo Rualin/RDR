@@ -42,5 +42,5 @@ curl -X POST -F "file=@/path/to/image" http://127.0.0.1:8000/predict/
 | parseq        | 88.91%      | 91.13%          | 0.0408 | 0.959       | 0.959    |
 
 * Exact match - Complete equality of words
-* Partitial match - Equality of lower case words
+* Partial match - Equality of lower case words
 * Meanings of other metrics can be found in our Kaiten
