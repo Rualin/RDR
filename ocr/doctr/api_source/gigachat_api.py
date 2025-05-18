@@ -7,10 +7,10 @@ from gigachat import GigaChat
 class gigachat_api:
     def __init__(self):
         self.__giga__ = GigaChat(
-            credentials=os.getenv('GIGACHAT_KEY'),
+            credentials=os.getenv("GIGACHAT_KEY"),
             verify_ssl_certs=False,
         )
-        self.__prompt__ = os.getenv('PROMPT')
+        self.__prompt__ = os.getenv("PROMPT")
 
     def upload_file(self, file_with_text: typing.BinaryIO):
         self.__file_id__ = self.__giga__.upload_file(file_with_text).id_
@@ -29,11 +29,11 @@ class gigachat_api:
         else:
             return self.__giga__.chat(
                 {
-                    'messages': [
+                    "messages": [
                         {
-                            'role': 'user',
-                            'content': self.__prompt__,
-                            'attachments': [self.__file_id__],
+                            "role": "user",
+                            "content": self.__prompt__,
+                            "attachments": [self.__file_id__],
                         }
                     ]
                 })
