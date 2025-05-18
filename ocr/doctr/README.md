@@ -37,9 +37,9 @@ curl -X POST -F "file=@/path/to/image" http://127.0.0.1:8000/predict/
 
 ## Recognition model info
 
-| Architecture  | Exact match | Partitial match | CER    | C_Precision | C_Recall |
+| Architecture  | Exact match | Partial match   | CER    | C_Precision | C_Recall |
 | ------------- | ----------- | --------------- | ------ | ----------- | -------- |
-| crnn_vgg16_bn | 70.00%      | 74.72%          | 0.0773 | 0.925       | 0.923    |
+| parseq        | 88.91%      | 91.13%          | 0.0408 | 0.959       | 0.959    |
 
 * Exact match - Complete equality of words
 * Partitial match - Equality of lower case words
