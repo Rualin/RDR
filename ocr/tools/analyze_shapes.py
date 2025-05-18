@@ -37,7 +37,7 @@ def main():
         num_of_crops += 1
 
     print_info(h_info, "h", num_of_crops)
-    print_info(w_info, 'w', num_of_crops)
+    print_info(w_info, "w", num_of_crops)
 
 
 if __name__ == "__main__":
